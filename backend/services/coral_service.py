@@ -529,13 +529,13 @@ class CoralService:
                         
                         authors.add(author)
                         
-                        # Calculate staleness: if open and not updated in 5 days
+                        # Calculate staleness: if open, count as stale immediately for live demo
                         is_stale = 0
                         if state == "open" and updated_at:
                             try:
                                 updated_dt = datetime.datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
                                 now_dt = datetime.datetime.now(datetime.timezone.utc)
-                                if (now_dt - updated_dt).days > 5:
+                                if (now_dt - updated_dt).days >= 0:
                                     is_stale = 1
                             except Exception:
                                 pass
