@@ -163,7 +163,7 @@ ORDER BY n.deadline ASC;"""
             content = "### 🚨 Top Delivery Threats & Critical Items\n\nBased on a direct SQL query joining Notion tasks and Slack blockers, here are the most critical delivery threats:\n\n"
             for r in results:
                 blockers_str = f"with **{r['slack_blockers']} blockers** active on Slack" if r['slack_blockers'] else "with no reported Slack blockers"
-                content += f"- **{r['name']}** is working on *\"{r['notion_task']}\"* approaching its deadline on **{r['deadline']}** ({blockers_str}).\n"
+                content += f"- **{r['name']}** is working on *\"{r['task_name']}\"* approaching its deadline on **{r['deadline']}** ({blockers_str}).\n"
                 
             content += "\n**Manager Recommendations:**\n1. Coordinate with Elena on **Database Migration** as its sharding tasks are extremely tight.\n2. Re-assign resources to resolve active blockers in Slack chat channels."
             
@@ -191,7 +191,82 @@ ORDER BY delta DESC;"""
             
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
-        # Scenario 3: Specific component risk analysis
+        # Scenario 3: List all GitHub issues
+        elif any(w in msg for w in ["issue", "bug", "error", "open bugs", "all bugs"]):
+            sql = """SELECT title, component_id, severity, status, assignee 
+FROM github_issues 
+WHERE status = 'open';"""
+            
+            results = self.coral.execute_sql_dicts(sql)
+            
+            content = "### 🐛 Live GitHub Issues & Bugs Report\n\nExecuted SQL query on Coral's `github_issues` table. Here is the active list of open bugs:\n\n"
+            if results:
+                content += "| Issue Title | Component | Severity | Assignee |\n"
+                content += "| :--- | :--- | :---: | :--- |\n"
+                for r in results:
+                    sev_emoji = "🔴" if r['severity'] == "critical" else "🟠" if r['severity'] == "high" else "🟡"
+                    content += f"| {r['title']} | `{r['component_id']}` | {sev_emoji} {r['severity'].capitalize()} | {r['assignee']} |\n"
+            else:
+                content += "*No open GitHub issues found in the database.*"
+                
+            return ChatResponse(content=content, sql_executed=sql, sql_results=results)
+
+        # Scenario 4: List all Pull Requests
+        elif any(w in msg for w in ["pr", "pull request", "stale pr", "prs"]):
+            sql = """SELECT title, component_id, author, status, is_stale, created_at 
+FROM github_pull_requests;"""
+            
+            results = self.coral.execute_sql_dicts(sql)
+            
+            content = "### 🔀 GitHub Pull Requests Audit\n\nQuerying the `github_pull_requests` table on Coral SQL layer:\n\n"
+            if results:
+                content += "| PR Title | Component | Author | Status | Stale? |\n"
+                content += "| :--- | :--- | :--- | :---: | :---: |\n"
+                for r in results:
+                    stale_badge = "⚠️ Yes" if r['is_stale'] == 1 else "✅ No"
+                    content += f"| {r['title']} | `{r['component_id']}` | {r['author']} | `{r['status']}` | {stale_badge} |\n"
+            else:
+                content += "*No GitHub Pull Requests found in the database.*"
+                
+            return ChatResponse(content=content, sql_executed=sql, sql_results=results)
+
+        # Scenario 5: List all Notion Tasks
+        elif any(w in msg for w in ["notion", "task", "todo", "milestone", "ticket"]):
+            sql = """SELECT task_name, component_id, assignee, deadline, priority, status 
+FROM notion_tasks 
+WHERE status != 'Done';"""
+            
+            results = self.coral.execute_sql_dicts(sql)
+            
+            content = "### 📅 Notion Active Tasks & Delivery Schedule\n\nQuerying Notion task boards (`notion_tasks` table) via Coral:\n\n"
+            if results:
+                content += "| Task Name | Component | Assignee | Deadline | Priority |\n"
+                content += "| :--- | :--- | :--- | :---: | :---: |\n"
+                for r in results:
+                    content += f"| {r['task_name']} | `{r['component_id']}` | {r['assignee']} | **{r['deadline']}** | `{r['priority']}` |\n"
+            else:
+                content += "*No uncompleted Notion tasks found in the database.*"
+                
+            return ChatResponse(content=content, sql_executed=sql, sql_results=results)
+
+        # Scenario 6: List all Slack messages / blockers
+        elif any(w in msg for w in ["slack", "message", "chat", "blocker"]):
+            sql = """SELECT user, text, component_id, timestamp, is_blocker 
+FROM slack_messages 
+WHERE is_blocker = 1;"""
+            
+            results = self.coral.execute_sql_dicts(sql)
+            
+            content = "### 💬 Active Slack Blockers & Risks\n\nQuerying Slack transcripts (`slack_messages` table) filtered for blockers:\n\n"
+            if results:
+                for r in results:
+                    content += f"- **{r['user']}** raised a blocker on `{r['component_id']}`:\n  *\"{r['text']}\"*\n"
+            else:
+                content += "*No active Slack blockers found in the transcripts.*"
+                
+            return ChatResponse(content=content, sql_executed=sql, sql_results=results)
+
+        # Scenario 7: Specific component risk analysis
         # Find which component is mentioned
         mentioned_comp = None
         for comp_id in ["auth-service", "db-migration", "payment-gateway", "analytics-dashboard"]:
@@ -240,15 +315,19 @@ WHERE c.id = '{mentioned_comp}';"""
                 
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
-        # Scenario 4: Default generic response
+        # Scenario 8: Default generic response
         sql = "SELECT name, owner, team FROM components"
         results = self.coral.execute_sql_dicts(sql)
         
         content = """Hello! I am your Coral-powered Engineering Manager Assistant. 
 
 I can query Coral's SQL layer across Notion, GitHub, and Slack to run cross-source checks. Try asking me:
-1. *What is most likely to miss its deadline this week?*
-2. *Which components are getting riskier?*
-3. *Show me the open bugs and blockers for database migration.*
+1. 🐛 *List all open GitHub issues*
+2. 🔀 *Show me the pull requests*
+3. 📅 *What tasks do we have on Notion?*
+4. 💬 *Show me the active Slack blockers*
+5. 🚨 *What is most likely to miss its deadline?*
+6. 📈 *Which components are getting riskier?*
+7. 🔍 *Show me the risk audit for auth-service*
 """
         return ChatResponse(content=content, sql_executed=sql, sql_results=results)
