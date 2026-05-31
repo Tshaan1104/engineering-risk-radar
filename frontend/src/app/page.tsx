@@ -1529,17 +1529,12 @@ WHERE c.id = '${comp.id}';`}
                         {sqlTrace.results.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
-                            <div className="max-h-28 overflow-y-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar">
-                              {sqlTrace.results.slice(0, 2).map((row, rIdx) => (
+                            <div className="max-h-36 overflow-y-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar">
+                              {sqlTrace.results.map((row, rIdx) => (
                                 <div key={rIdx} className="p-2 border-b border-white/5 text-slate-400 font-mono truncate">
                                   {JSON.stringify(row)}
                                 </div>
                               ))}
-                              {sqlTrace.results.length > 2 && (
-                                <div className="p-1.5 text-center text-slate-600 font-semibold italic text-[9px]">
-                                  + {sqlTrace.results.length - 2} additional rows
-                                </div>
-                              )}
                             </div>
                           </div>
                         )}
