@@ -1417,9 +1417,9 @@ WHERE c.id = '${comp.id}';`}
 
           {/* TAB 4: EM AI CHAT ASSISTANT WITH POWERFUL QUERY TRACE */}
           {activeTab === "chat" && (
-            <div className="space-y-6 max-w-6xl mx-auto h-[calc(100vh-310px)] flex flex-col min-h-0">
+            <div className="space-y-6 max-w-6xl mx-auto h-auto lg:h-[calc(100vh-280px)] flex flex-col min-h-[600px] lg:min-h-0">
               
-              <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+              <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-visible scrollbar">
                 
                 {/* Chat conversation area */}
                 <div className="flex-1 glass-panel rounded-3xl flex flex-col justify-between min-h-0 bg-[#090d16]/30">
@@ -1529,8 +1529,8 @@ WHERE c.id = '${comp.id}';`}
                         {sqlTrace.results.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
-                            <div className="max-h-48 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px]">
-                              <table className="w-full text-left border-collapse font-mono">
+                            <div className="max-h-64 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px]">
+                              <table className="w-full min-w-[550px] text-left border-collapse font-mono">
                                 <thead>
                                   <tr className="bg-slate-900/60 border-b border-white/5 text-indigo-400 font-black uppercase tracking-wider">
                                     {Object.keys(sqlTrace.results[0]).map((key) => (
