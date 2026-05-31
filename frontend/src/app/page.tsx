@@ -1529,12 +1529,27 @@ WHERE c.id = '${comp.id}';`}
                         {sqlTrace.results.length > 0 && (
                           <div className="space-y-1.5">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
-                            <div className="max-h-36 overflow-y-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar">
-                              {sqlTrace.results.map((row, rIdx) => (
-                                <div key={rIdx} className="p-2 border-b border-white/5 text-slate-400 font-mono truncate">
-                                  {JSON.stringify(row)}
-                                </div>
-                              ))}
+                            <div className="max-h-48 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px]">
+                              <table className="w-full text-left border-collapse font-mono">
+                                <thead>
+                                  <tr className="bg-slate-900/60 border-b border-white/5 text-indigo-400 font-black uppercase tracking-wider">
+                                    {Object.keys(sqlTrace.results[0]).map((key) => (
+                                      <th key={key} className="p-2 truncate max-w-[120px] font-black">{key}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {sqlTrace.results.map((row: any, rIdx) => (
+                                    <tr key={rIdx} className="border-b border-white/5 hover:bg-white/3 font-medium transition-colors">
+                                      {Object.keys(sqlTrace.results[0]).map((key) => (
+                                        <td key={key} className="p-2 text-slate-300 truncate max-w-[150px]">
+                                          {String(row[key] !== null && row[key] !== undefined ? (typeof row[key] === 'object' ? JSON.stringify(row[key]) : row[key]) : "NULL")}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           </div>
                         )}
