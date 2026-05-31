@@ -1417,7 +1417,7 @@ WHERE c.id = '${comp.id}';`}
 
           {/* TAB 4: EM AI CHAT ASSISTANT WITH POWERFUL QUERY TRACE */}
           {activeTab === "chat" && (
-            <div className="space-y-6 max-w-6xl mx-auto h-auto lg:h-[calc(100vh-280px)] flex flex-col min-h-[600px] lg:min-h-0">
+            <div className="space-y-6 max-w-7xl mx-auto h-auto lg:h-[calc(100vh-280px)] flex flex-col min-h-[600px] lg:min-h-0">
               
               <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-y-auto lg:overflow-visible scrollbar">
                 
@@ -1480,7 +1480,7 @@ WHERE c.id = '${comp.id}';`}
                 </div>
 
                 {/* Right panel: Coral Query Trace Console */}
-                <div className="w-full lg:w-[450px] glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25 h-full min-h-0 overflow-hidden">
+                <div className="w-full lg:w-[500px] glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25 h-full min-h-0 overflow-hidden">
                   <div className="space-y-4 flex-1 flex flex-col min-h-0 overflow-y-auto pr-1">
                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center space-x-1.5">
                       <Terminal className="w-4 h-4 text-indigo-400 animate-pulse" />
@@ -1527,23 +1527,40 @@ WHERE c.id = '${comp.id}';`}
 
                         {/* Row output count preview */}
                         {sqlTrace.results.length > 0 && (
-                          <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
-                            <div className="max-h-64 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px] flex-1 min-h-[120px]">
-                              <table className="w-full text-left border-collapse font-mono">
+                          <div className="space-y-2 flex-1 flex flex-col min-h-0">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
+                              <span className="text-[8px] font-bold text-emerald-400/80 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 font-sans">
+                                {sqlTrace.results.length} Rows
+                              </span>
+                            </div>
+                            <div className="max-h-72 overflow-auto border border-white/10 rounded-xl bg-[#030712]/50 scrollbar text-[10px] flex-1 min-h-[140px] shadow-2xl">
+                              <table className="w-full text-left border-collapse font-mono divide-y divide-white/5">
                                 <thead>
-                                  <tr className="bg-slate-900 border-b border-white/5 text-indigo-400 font-black uppercase tracking-wider">
+                                  <tr className="bg-slate-900 border-b border-white/10 text-indigo-300 font-bold uppercase tracking-wider text-[8px]">
                                     {Object.keys(sqlTrace.results[0]).map((key) => (
-                                      <th key={key} className="p-2 truncate max-w-[120px] font-black sticky top-0 bg-slate-900 z-10">{key}</th>
+                                      <th key={key} className="p-2.5 font-bold sticky top-0 bg-slate-900 z-10 border-r border-b border-white/10 text-[9px] text-indigo-400">{key}</th>
                                     ))}
                                   </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-white/5">
                                   {sqlTrace.results.map((row: any, rIdx) => (
-                                    <tr key={rIdx} className="border-b border-white/5 hover:bg-white/3 font-medium transition-colors">
+                                    <tr key={rIdx} className="hover:bg-indigo-500/10 even:bg-white/[0.01] transition-colors">
                                       {Object.keys(sqlTrace.results[0]).map((key) => (
-                                        <td key={key} className="p-2 text-slate-300 truncate max-w-[150px]">
-                                          {String(row[key] !== null && row[key] !== undefined ? (typeof row[key] === 'object' ? JSON.stringify(row[key]) : row[key]) : "NULL")}
+                                        <td key={key} className="p-2.5 text-slate-300 border-r border-white/5 max-w-[280px] break-words whitespace-normal font-sans text-[10px] leading-relaxed">
+                                          {key === "severity" || key === "bug_severity" ? (
+                                            <span className={`px-2 py-0.5 rounded font-mono font-bold text-[8px] uppercase tracking-wider ${
+                                              row[key] === "critical" ? "bg-rose-500/15 text-rose-400 border border-rose-500/20" :
+                                              row[key] === "high" ? "bg-orange-500/15 text-orange-400 border border-orange-500/20" :
+                                              "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+                                            }`}>
+                                              {row[key]}
+                                            </span>
+                                          ) : row[key] !== null && row[key] !== undefined ? (
+                                            typeof row[key] === 'object' ? JSON.stringify(row[key]) : String(row[key])
+                                          ) : (
+                                            <span className="text-slate-600 font-bold font-mono">NULL</span>
+                                          )}
                                         </td>
                                       ))}
                                     </tr>
