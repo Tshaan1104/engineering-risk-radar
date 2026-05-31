@@ -1480,8 +1480,8 @@ WHERE c.id = '${comp.id}';`}
                 </div>
 
                 {/* Right panel: Coral Query Trace Console */}
-                <div className="w-full lg:w-[450px] glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25">
-                  <div className="space-y-4">
+                <div className="w-full lg:w-[450px] glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25 h-full min-h-0 overflow-hidden">
+                  <div className="space-y-4 flex-1 flex flex-col min-h-0 overflow-y-auto pr-1">
                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center space-x-1.5">
                       <Terminal className="w-4 h-4 text-indigo-400 animate-pulse" />
                       <span>Coral SQL Query Trace</span>
@@ -1495,7 +1495,7 @@ WHERE c.id = '${comp.id}';`}
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-4 animate-fade-in font-mono text-[10px]">
+                      <div className="space-y-4 animate-fade-in font-mono text-[10px] flex-1 flex flex-col min-h-0">
                         
                         {/* Status logs */}
                         <div className="p-3 bg-black/40 border border-white/5 rounded-xl space-y-1 font-semibold text-slate-400">
@@ -1527,14 +1527,14 @@ WHERE c.id = '${comp.id}';`}
 
                         {/* Row output count preview */}
                         {sqlTrace.results.length > 0 && (
-                          <div className="space-y-1.5">
+                          <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
                             <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block font-sans">Grid Output Preview</span>
-                            <div className="max-h-64 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px]">
-                              <table className="w-full min-w-[550px] text-left border-collapse font-mono">
+                            <div className="max-h-64 overflow-auto border border-white/5 rounded-xl bg-slate-950/20 scrollbar text-[9px] flex-1 min-h-[120px]">
+                              <table className="w-full text-left border-collapse font-mono">
                                 <thead>
-                                  <tr className="bg-slate-900/60 border-b border-white/5 text-indigo-400 font-black uppercase tracking-wider">
+                                  <tr className="bg-slate-900 border-b border-white/5 text-indigo-400 font-black uppercase tracking-wider">
                                     {Object.keys(sqlTrace.results[0]).map((key) => (
-                                      <th key={key} className="p-2 truncate max-w-[120px] font-black">{key}</th>
+                                      <th key={key} className="p-2 truncate max-w-[120px] font-black sticky top-0 bg-slate-900 z-10">{key}</th>
                                     ))}
                                   </tr>
                                 </thead>

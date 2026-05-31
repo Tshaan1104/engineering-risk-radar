@@ -148,8 +148,46 @@ class ExplanationService:
         """Highly intelligent fallback parser executing specific SQL queries based on user intent"""
         msg = user_message.lower()
         
+        # Diagnostic Scenario: Why aren't my live repo issues showing / why is the score 0?
+        if any(w in msg for w in ["not visible", "not showing", "not shown", "0 score", "zero score", "score is 0", "score of 0", "why isn't my", "no issues", "missing issue", "missing bug", "don't see my", "cant see my", "can't see my", "still not shown", "not visible"]):
+            sql = "SELECT * FROM github_issues;"
+            results = self.coral.execute_sql_dicts(sql)
+            
+            content = """### 🔍 E2E Diagnostic Checklist: Missing GitHub Issues & 0% Scores
+
+If your live GitHub repository issues/PRs are not appearing on your Component Risk Scorecards (or the score remains 0%), here is the verification checklist to get them displayed:
+
+1. **Verify `.env` Settings**:
+   Ensure `backend/.env` (or the root `.env`) has the exact repository coordinates:
+   - `GITHUB_OWNER=Tshaan1104`
+   - `GITHUB_REPO=engineering-risk-radar`
+   - `GITHUB_TOKEN=your_real_github_pat`
+   *(Without a valid token, the system catches the API exception and falls back to safe mock seeds to ensure 100% demo stability).*
+
+2. **Trigger Live Sync**:
+   Click the **Sync Now** button at the top-right of the dashboard. This spawns the Rust-powered `coral.exe` CLI process under the hood, fetching live issues/PRs from your repo and caching them inside the SQLite replica database.
+
+3. **Verify Component Keyword Matching**:
+   Since live GitHub issues are fetched from a general repository, Coral automatically maps issues to specific components based on title/description keywords:
+   - Contains `auth` ➔ **auth-service**
+   - Contains `migration` or `db` ➔ **db-migration**
+   - Contains `pay` or `charge` or `bill` ➔ **payment-gateway**
+   - Contains `analytics` or `dashboard` ➔ **analytics-dashboard**
+
+   *If your issue titles don't contain any of these keywords, they will be cached in SQLite but won't be mapped to any specific scorecard component! Try creating an issue on GitHub with 'auth' or 'migration' in the title and sync again.*
+
+4. **Verify Severity Risk Calculations**:
+   Only **open** issues are factored into the scorecard calculations. Severity maps to risk points as follows:
+   - Label `critical` or `p0` ➔ **15 risk points**
+   - Label `high`, `bug`, or `error` ➔ **10 risk points**
+   - Default/no label ➔ **5 risk points**
+
+   *If you have open issues mapped to a component, the score will immediately recalculate and display dynamically! Let's check the database now by asking: **List all open GitHub issues**.*
+"""
+            return ChatResponse(content=content, sql_executed=sql, sql_results=results)
+
         # Scenario 1: What is failing/most likely to miss deadline?
-        if any(w in msg for w in ["fail", "miss", "deadline", "late", "focus", "today"]):
+        elif any(w in msg for w in ["fail", "miss", "deadline", "late", "focus", "today"]):
             sql = """SELECT c.name, n.task_name, n.deadline, COUNT(s.id) as slack_blockers
 FROM components c
 JOIN notion_tasks n ON c.id = n.component_id
@@ -192,7 +230,7 @@ ORDER BY delta DESC;"""
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
         # Scenario 3: List all GitHub issues
-        elif any(w in msg for w in ["issue", "bug", "error", "open bugs", "all bugs"]):
+        elif (any(w in msg for w in ["list", "show", "get", "display", "all"]) and any(w in msg for w in ["issue", "bug", "error"])) or any(w in msg for w in ["open bugs", "all bugs", "active bugs"]):
             sql = """SELECT title, component_id, severity, status, assignee 
 FROM github_issues 
 WHERE status = 'open';"""
@@ -212,7 +250,7 @@ WHERE status = 'open';"""
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
         # Scenario 4: List all Pull Requests
-        elif any(w in msg for w in ["pr", "pull request", "stale pr", "prs"]):
+        elif (any(w in msg for w in ["list", "show", "get", "display", "all"]) and any(w in msg for w in ["pr", "pull request", "prs"])) or any(w in msg for w in ["all prs", "stale prs"]):
             sql = """SELECT title, component_id, author, status, is_stale, created_at 
 FROM github_pull_requests;"""
             
@@ -231,7 +269,7 @@ FROM github_pull_requests;"""
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
         # Scenario 5: List all Notion Tasks
-        elif any(w in msg for w in ["notion", "task", "todo", "milestone", "ticket"]):
+        elif (any(w in msg for w in ["list", "show", "get", "display", "all"]) and any(w in msg for w in ["notion", "task", "todo", "milestone", "ticket"])) or any(w in msg for w in ["all tasks", "notion tasks"]):
             sql = """SELECT task_name, component_id, assignee, deadline, priority, status 
 FROM notion_tasks 
 WHERE status != 'Done';"""
@@ -250,7 +288,7 @@ WHERE status != 'Done';"""
             return ChatResponse(content=content, sql_executed=sql, sql_results=results)
 
         # Scenario 6: List all Slack messages / blockers
-        elif any(w in msg for w in ["slack", "message", "chat", "blocker"]):
+        elif (any(w in msg for w in ["list", "show", "get", "display", "all"]) and any(w in msg for w in ["slack", "message", "chat", "blocker"])) or any(w in msg for w in ["all blockers", "slack blockers"]):
             sql = """SELECT user, text, component_id, timestamp, is_blocker 
 FROM slack_messages 
 WHERE is_blocker = 1;"""
