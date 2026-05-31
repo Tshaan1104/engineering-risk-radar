@@ -1480,7 +1480,7 @@ WHERE c.id = '${comp.id}';`}
                 </div>
 
                 {/* Right panel: Coral Query Trace Console */}
-                <div className="w-full lg:w-96 glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25">
+                <div className="w-full lg:w-[450px] glass-panel rounded-3xl p-5 flex flex-col justify-between shrink-0 bg-slate-950/25">
                   <div className="space-y-4">
                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center space-x-1.5">
                       <Terminal className="w-4 h-4 text-indigo-400 animate-pulse" />
