@@ -120,6 +120,13 @@ def get_component_evidence(component_id: str, coral_service: CoralService = Depe
 
 @router.post("/sync", response_model=Dict[str, str])
 def sync_scores(coral_service: CoralService = Depends(get_coral_service)):
+    # Trigger a live synchronization from Coral SQL Gateway for GitHub issues and PRs
+    if coral_service.coral_available:
+        try:
+            coral_service.sync_live_github_data()
+        except Exception as e:
+            print(f"[API SYNC ERROR] Failed syncing live data from Coral: {e}")
+            
     risk_engine = RiskEngine(coral_service)
     
     # Fetch all component IDs
