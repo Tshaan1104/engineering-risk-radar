@@ -14,9 +14,16 @@ class CoralService:
         self.coral_available = False
         self.use_fallback = True
 
-        # Check if the binary is in PATH or custom CORAL_PATH exists
+        # Check standard paths
         binary_path = shutil.which(CORAL_PATH) or (CORAL_PATH if os.path.exists(CORAL_PATH) else None)
         
+        # If not found, check relative to this script's directory (backend/bin/coral.exe)
+        if not binary_path:
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            local_bin = os.path.join(backend_dir, "bin", "coral.exe")
+            if os.path.exists(local_bin):
+                binary_path = local_bin
+
         if binary_path and CORAL_COMPATIBILITY_MODE != "true":
             try:
                 # Test the binary by requesting its help or version

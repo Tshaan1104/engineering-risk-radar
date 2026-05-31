@@ -1,0 +1,20 @@
+# Environments
+.env
+backend/.env
+
+# Coral binary
+backend/bin/coral.exe
+
+# Python Cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Node dependencies and build
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+.next/
